@@ -1,12 +1,13 @@
 Name:           wsmancli
 Version:        2.2.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        BSD
 Url:            http://www.openwsman.org/
 Source:         http://downloads.sourceforge.net/project/openwsman/%{name}/%{version}/%{name}-%{version}.tar.bz2
 Source1:        COPYING
 Source2:        README
 Source3:        AUTHORS
+Patch0:         wsmancli-bz630873.patch
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXXX)
 Group:          Applications/System
 BuildRequires:  openwsman-devel >= 2.1.0 pkgconfig curl-devel
@@ -20,6 +21,7 @@ systems using Web Services Management protocol.
 %prep
 %setup -q
 cp -fp %SOURCE1 %SOURCE2 %SOURCE3 .;
+%patch0 -p1 -b .bz630873
 
 %build
 %configure --disable-more-warnings 
@@ -39,6 +41,10 @@ rm -rf %{buildroot}
 %doc COPYING README AUTHORS
 
 %changelog
+* Mon Jan 08 2018 Vitezslav Crhonek <vcrhonek@redhat.com> - 2.2.3-2
+- Fix wsmancli general functionality on some architectures (ppc, s390x)
+  Resolves: #630873
+
 * Mon Mar 15 2010 Vitezslav Crhonek <vcrhonek@redhat.com> - 2.2.3-1
 - Update to wsmancli-2.1.3
 - Fix dist tag
