@@ -1,0 +1,12 @@
+diff -up wsmancli-2.3.0/examples/cpp/Makefile.in.orig wsmancli-2.3.0/examples/cpp/Makefile.in
+--- wsmancli-2.3.0/examples/cpp/Makefile.in.orig	2012-11-12 14:06:55.438748181 +0100
++++ wsmancli-2.3.0/examples/cpp/Makefile.in	2012-11-12 14:07:13.932935875 +0100
+@@ -224,7 +224,7 @@ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ LDADD = \
+-       $(OPENWSMAN_LIBS) -lwsman_clientpp
++       $(OPENWSMAN_LIBS) -lpthread -lwsman_clientpp
+ 
+ EnumInstance_SOURCES = \
+ 		EnumInstance.cpp

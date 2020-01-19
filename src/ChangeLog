@@ -1,0 +1,37 @@
+Version 2.3.0
+  - don't crash on filter parse error (Zoltan Micskei)
+  - remove -Q (don't send request) option
+  - complain about bad filter expression
+  - fix autotools build for MacOS (Dan Villiom Podlaski Christiansen)
+
+Version 2.2.7.1
+  - adapt to reduced libu exposure in openwsman
+
+Version 2.2.7
+  - fix the default port setting to match wsmc_create() call. Use
+    https (port 5986) when cainfo is set.
+  - in debug mode, dump the complete response XML if it can't
+    be parsed (Chris Poblete)
+
+Version 2.2.6
+  - fix segfault in output_file handling (Chris Poblete)
+
+Version 2.2.5
+  - fix integral parameters on big endian architectures (Kamil Dudka)
+
+Version 2.2.4
+  - Enhance enumerate with association filter to have the ability to
+    specify the optional elements namely: AssociationClassName, Role,
+    ResultClassName, ResultRole and IncludeResultProperty.
+    (IncludeResultProperty is a list, specify it as a comma separated list
+    in the “U” option.)
+    (Chris Poblete)
+  Bugfixes
+  - fix default ports (5985/5986)
+  - fix --sslkey handling
+  - add warning if ssl used without --cacert
+
+Version 2.2.3
+  Bugfix release, synchronize version with openwsman
+  - fix double free error on enumeration (Chris Poblete)
+  - add '--version' to print version and build timestamp  
