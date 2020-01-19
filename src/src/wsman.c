@@ -76,6 +76,7 @@ static char *proxy = NULL;
 static char *proxy_upwd = NULL;
 
 
+static long int non_interactive = 0;
 static long int debug_level = -1;
 static char *encoding = NULL;
 static char *test_case = NULL;
@@ -102,6 +103,7 @@ static char *event_thumbprint = NULL;
 
 static char *cim_namespace = NULL;
 static char *fragment = NULL;
+static char *locale = NULL;
 static char *wsm_filter = NULL;
 static char *wsm_dialect = NULL;
 static char *input = NULL;
@@ -181,6 +183,8 @@ static char wsman_parse_options(int argc, char **argv)
 	char my_version = 0;
 
 	u_option_entry_t options[] = {
+		{"non-interactive", 0, U_OPTION_ARG_NONE, &non_interactive,
+			"Non interactive mode, don't ask for credentials", NULL},
 		{"version", 'q', U_OPTION_ARG_NONE, &my_version,
 			"Display application version", NULL},
 		{"debug", 'd', U_OPTION_ARG_INT, &debug_level,
@@ -246,6 +250,8 @@ static char wsman_parse_options(int argc, char **argv)
 			"maximal envelope size", "<size>"},
 		{"fragment", 'F', U_OPTION_ARG_STRING, &fragment,
 			"Fragment (Supported Dialects: XPATH)", "<fragment>"},
+		{"locale", 'L', U_OPTION_ARG_STRING, &locale,
+			"Locale for this request", "<RFC 5646 language code>"},
 		{NULL}
 	};
 
@@ -370,6 +376,9 @@ static char wsman_parse_options(int argc, char **argv)
           }
           return FALSE;
 	}
+        else if (retval == 2) { /* help */
+          exit(0);
+        }
 
 	if (my_version) {
 		fprintf(stdout, PACKAGE_STRING " (" PACKAGE_BUILDTS ")\n\n");
@@ -509,25 +518,18 @@ request_usr_pwd( WsManClient *client, wsman_auth_type_t auth,
 
 
 
-static hash_t *wsman_options_get_properties(void)
+static void
+wsman_options_set_properties(client_opt_t *options)
 {
 	int c = 0;
-	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
 	while (properties != NULL && properties[c] != NULL) {
 		char *cc[3] = { NULL, NULL, NULL };
 		u_tokenize1(cc, 2, properties[c], '=');
-		if (!hash_lookup(h, cc[0])) {
-			if (!hash_alloc_insert(h, cc[0], cc[1])) {
-				debug("hash_alloc_insert failed");
-			}
-		} else {
-			warn("duplicate not added to hash");
-		}
-
+                wsmc_add_property(options, cc[0], cc[1]);
 		c++;
 	}
-	return h;
+	return;
 }
 
 
@@ -632,6 +634,18 @@ int main(int argc, char **argv)
 	char subscontext[512];
 	filter_t *filter = NULL;
 
+        /* read credentials from environment */
+        username = getenv("WSMAN_USER");
+        password = getenv("WSMAN_PASS");
+        event_username = getenv("WSMAN_EVENT_USER");
+        event_password = getenv("WSMAN_EVENT_PASS");
+
+        /* parse command line options
+           might overwrite environment credentials */
+
+	if (!wsman_parse_options(argc, argv)) {
+		exit(EXIT_FAILURE);
+	}
 
 	filename = (char *) config_file;
 
@@ -645,9 +659,6 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Configuration file not found\n");
 			exit(EXIT_FAILURE);
 		}
-	}
-	if (!wsman_parse_options(argc, argv)) {
-		exit(EXIT_FAILURE);
 	}
 	initialize_logging();
 	//      wsmc_transport_init(NULL);
@@ -666,8 +677,9 @@ int main(int argc, char **argv)
 				password);
 	}
 
-	wsmc_transport_set_auth_request_func(cl ,  &request_usr_pwd );
-
+        if (non_interactive == 0) {
+          wsmc_transport_set_auth_request_func(cl ,  &request_usr_pwd );
+        }
 
 	if (cl == NULL) {
 		error("Null Client");
@@ -731,8 +743,11 @@ int main(int argc, char **argv)
 	if (fragment) {
 		options->fragment = fragment;
 	}
+	if (locale) {
+		options->locale = locale;
+	}
 
-	options->properties = wsman_options_get_properties();
+	wsman_options_set_properties(options);
 	options->cim_ns = cim_namespace;
 	if (cim_extensions) {
 		wsmc_set_action_option(options, FLAG_CIM_EXTENSIONS);
@@ -871,7 +886,7 @@ int main(int argc, char **argv)
 				hnode_t *hn;
 				hash_t *selfilter = NULL;
 				hash_t *selectors_new = NULL;
-				selector_entry *entry;
+                                key_value_t *entry;
 				selectors_new = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 				selfilter = u_parse_query(wsm_filter);
                                 if (!selfilter) {
@@ -880,9 +895,9 @@ int main(int argc, char **argv)
                                 }
 				hash_scan_begin(&hs, selfilter);
 				while ((hn = hash_scan_next(&hs))) {
-					entry = u_malloc(sizeof(selector_entry));
+                                        entry = u_malloc(sizeof(key_value_t));
 					entry->type = 0;
-					entry->entry.text = (char *)hnode_get(hn);
+					entry->v.text = (char *)hnode_get(hn);
 					hash_alloc_insert(selectors_new, hnode_getkey(hn), entry);
 				}
 
@@ -1030,6 +1045,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "%s\n",
 					wsmc_get_fault_string(cl));
 		}
+                retVal = 1;
 	}
 	wsmc_options_destroy(options);
 	filter_destroy(filter);

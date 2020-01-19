@@ -1,14 +1,17 @@
 Name:           wsmancli
-Version:        2.3.0
-Release:        4%{dist}
+Version:        2.6.0
+Release:        1%{dist}
 License:        BSD
 Url:            http://www.openwsman.org/
-Source:         http://downloads.sourceforge.net/project/openwsman/%{name}/%{version}/%{name}-%{version}.tar.bz2
+# You can get this tarball here:
+# https://github.com/Openwsman/wsmancli/archive/v%{version}.tar.gz
+Source:         wsmancli-%{version}.tar.gz
 Source1:        COPYING
 Source2:        README
 Source3:        AUTHORS
 Group:          Applications/System
 BuildRequires:  openwsman-devel >= 2.1.0 pkgconfig curl-devel
+BuildRequires:  autoconf automake libtool
 Requires:       openwsman curl
 Patch0:         missing-pthread-symbols.patch
 Summary:        WS-Management-Command line Interface
@@ -23,6 +26,7 @@ systems using Web Services Management protocol.
 cp -fp %SOURCE1 %SOURCE2 %SOURCE3 .;
 
 %build
+./bootstrap
 %configure --disable-more-warnings 
 make %{?_smp_flags}
 
@@ -32,9 +36,15 @@ make DESTDIR=%{buildroot} install
 %files
 %{_bindir}/wsman
 %{_bindir}/wseventmgr
+%{_mandir}/man1/wsman*
+%{_mandir}/man1/wseventmgr*
 %doc COPYING README AUTHORS
 
 %changelog
+* Mon Oct 16 2017 Vitezslav Crhonek <vcrhonek@redhat.com> - 2.6.0-1
+- Update to wsmancli-2.6.0
+  Resolves: #1496471
+
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 2.3.0-4
 - Mass rebuild 2014-01-24
 

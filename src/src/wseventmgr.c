@@ -272,6 +272,9 @@ static char wsman_parse_options(int argc, char **argv)
           }
           return FALSE;
 	}
+        else if (retval == 2) { /* found help */
+          exit(0);
+        }
 
 	if (argc > 2) {
 		_action = argv[1];
@@ -413,6 +416,15 @@ int main(int argc, char **argv)
 	char *resource_uri = NULL;
 	char subscontext[512];
 	filter_t *filter = NULL;
+
+        /* read credentials from environment */
+        username = getenv("WSEVENTMGR_USER");
+        password = getenv("WSEVENTMGR_PASS");
+        event_username = getenv("WSEVENTMGR_EVENT_USER");
+        event_password = getenv("WSEVENTMGR_EVENT_PASS");
+
+        /* parse command line options
+           might overwrite environment credentials */
 	if (!wsman_parse_options(argc, argv)) {
 		exit(EXIT_FAILURE);
 	}

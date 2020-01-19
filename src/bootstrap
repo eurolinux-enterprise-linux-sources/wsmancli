@@ -1,0 +1,15 @@
+#!/bin/sh 
+
+UNAME=`uname`
+
+if [ "$UNAME" = "Darwin" ]; then
+    LIBTOOLIZE=glibtoolize
+else
+    LIBTOOLIZE=libtoolize
+fi
+
+$LIBTOOLIZE --copy --force --automake
+aclocal
+autoheader
+automake --add-missing --copy --foreign
+autoconf
