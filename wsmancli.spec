@@ -1,6 +1,6 @@
 Name:           wsmancli
 Version:        2.6.0
-Release:        1%{dist}
+Release:        2%{?dist}
 License:        BSD
 Url:            http://www.openwsman.org/
 # You can get this tarball here:
@@ -41,6 +41,10 @@ make DESTDIR=%{buildroot} install
 %doc COPYING README AUTHORS
 
 %changelog
+* Wed Jun 20 2018 Vitezslav Crhonek <vcrhonek@redhat.com> - 2.6.0-2
+- Fix Dist Tag
+  Resolves: #1540433
+
 * Mon Oct 16 2017 Vitezslav Crhonek <vcrhonek@redhat.com> - 2.6.0-1
 - Update to wsmancli-2.6.0
   Resolves: #1496471
